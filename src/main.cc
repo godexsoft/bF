@@ -30,9 +30,9 @@ int main(int argc, char *argv[])
         args.add_option({"logging", 'l', nullptr, 0, "Log to stderr"}, logging);
     }
 
-    if (!args.parse(argc, argv))
+    if (!args.parse(argc, argv, "[filename or -]", "Options:"))
     {
-        cerr << "there was an error parsing args\n";
+        bf::logger::instance().fatal("there was an error parsing args");
         return 1;
     }
 
@@ -47,9 +47,9 @@ int main(int argc, char *argv[])
     {
         bf::logger::instance().enable(logging);
 
-        bf::logger::instance().print("stack size %d", stack_size);
-        bf::logger::instance().print("cell size: %d bytes", cell_size);
-        bf::logger::instance().print("start cell: %d", start_cell);
+        bf::logger::instance().print("stack size %d cells", stack_size);
+        bf::logger::instance().print("cell size: %d bytes (will round to closest high)", cell_size);
+        bf::logger::instance().print("start at cell: %d", start_cell);
         bf::logger::instance().print("elastic memory: %s", elastic ? "yes" : "no");
         bf::logger::instance().print("wrapping: %s", wrapping ? "yes" : "no");
     }
