@@ -7,27 +7,14 @@
 
 namespace util
 {
-template <typename T> static int hex_width()
+template <typename T> static int constexpr hex_width()
 {
-    if constexpr (std::is_same<T, int8_t>())
-    {
-        return 2;
-    }
-    else if constexpr (std::is_same<T, int16_t>())
-    {
-        return 4;
-    }
-    else if constexpr (std::is_same<T, int32_t>())
-    {
-        return 8;
-    }
-
-    return 16;
+    return sizeof(T) * 2;    
 }
 
 template <typename T> static std::string hex(T value)
 {
-    int width = hex_width<T>();
+    constexpr int width = hex_width<T>();
 
     std::stringstream iss;
     iss << std::setfill('0') << std::right << std::setw(width) << std::hex << static_cast<int64_t>(value);

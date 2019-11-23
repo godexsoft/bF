@@ -1,6 +1,7 @@
 #include "core.h"
 #include "cxx_argp_parser.h"
 #include "log.h"
+#include "util.h"
 
 #include <fstream>
 #include <iostream>
