@@ -25,7 +25,17 @@ using brew:
 
 ## configuring
 
+The project is configured and built using CMake.
+In the CMakeLists.txt file at the top logging can be enabled or disabled. 
+
+    set(BF_ENABLE_LOG true)
+
+It's disabled by default.
+
+To configure and build bF:
+
     $ mkdir build && cd build && cmake ..
+    $ make
 
 ## running
 
@@ -36,9 +46,9 @@ using brew:
 There is an examples folder with a bunch of programs to play with. 
 You can either specify the file as first argument
 
-    $ ./bF examples/hello.bf
+    $ ./bF ../examples/hello.bf
 
 or read input from stdin if you pass "-" instead
 
-    $ ./bF - < examples/hello.bf
+    $ ./bF - < ../examples/hello.bf
     $ echo ",[.,]!Hello" | ./bF -
