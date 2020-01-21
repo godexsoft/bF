@@ -7,6 +7,8 @@
 #include <iostream>
 #include <map>
 
+#include <fmt/format.h>
+
 namespace bf
 {
 template <typename T> class core
@@ -14,62 +16,59 @@ template <typename T> class core
   public:
     using memoryt = memory<T>;
     using parsert = parser<T>;
-    using sizet = typename memory<T>::sizet;
 
-    core(std::string_view file, sizet cells, sizet start_cell, bool elastic, bool wrapping)
-        : memory_(cells, start_cell, elastic, wrapping)
-        , parser_(file)
+    core(std::string_view file, int cells, int start_cell, bool elastic, bool wrapping)
+        : memory_{cells, start_cell, elastic, wrapping}
+        , parser_{file}
         , targets_(cells, 0)
     {
     }
 
-    int run()
+    void run()
     {
-        action in;
-        std::vector<sizet> loops;
-        sizet parsing_cursor = 0;
+        std::vector<int> loops;
 
         loops.reserve(128);     // should be enough depth for most programs
         actions_.reserve(1024); // probably enough for most programs. will grow if needed
 
         // parsing
-        while ((in = parser_.next()) != action::eof)
-        {
-            actions_.push_back(in);
+        parser_.parse([&](auto cursor, auto act) {
+            actions_.push_back(act);
 
-            if (in == loop_start)
+            switch (act)
             {
-                loops.push_back(parsing_cursor);
-            }
-            else if (in == loop_end)
-            {
+            case loop_start:
+                loops.push_back(cursor);
+                break;
+            case loop_end: {
                 if (loops.empty())
                 {
-                    logger::instance().fatal("unmatched ']' at %d", parsing_cursor);
+                    logger::instance().fatal("unmatched ']' at {}", cursor);
                     exit(-127);
                 }
 
                 auto idx = loops.back();
-                targets_[parsing_cursor] = idx;
-                targets_[idx] = parsing_cursor;
+                targets_[cursor] = idx;
+                targets_[idx] = cursor;
                 loops.pop_back();
             }
-
-            ++parsing_cursor;
-        }
+            break;
+            default:
+                // not interested at these here
+                break;
+            }
+        });
 
         if (!loops.empty())
         {
-            logger::instance().fatal("unmatched '[' at %d", loops.back());
+            logger::instance().fatal("unmatched '[' at {}", loops.back());
             exit(-127);
         }
-
-        logger::instance().info("RUNTIME");
 
         // runtime
         for (auto cursor = 0; cursor < actions_.size(); ++cursor)
         {
-            action act = actions_.at(cursor);
+            auto act = actions_.at(cursor);
 
             if (act == loop_start)
             {
@@ -107,11 +106,11 @@ template <typename T> class core
                 char c = memory_.read();
                 if (c == T(10))
                 {
-                    std::cout << std::endl;
+                    fmt::print("\n");
                 }
                 else
                 {
-                    std::cout << c;
+                    fmt::print("{}", c);
                 }
             }
             else if (act == input)
@@ -124,13 +123,12 @@ template <typename T> class core
                 if (std::cin.fail())
                 {
                     logger::instance().info("EOF received");
-                    ++cursor; // skip this input
                     continue;
                 }
 
                 if (c == '\n' || c == '\r')
                 {
-                    memory_.write(T(10)); // 10 is bf way to write \n
+                    memory_.write(T{10}); // 10 is bf way to write \n
                 }
                 else
                 {
@@ -146,15 +144,13 @@ template <typename T> class core
                 // nop at runtime
             }
         }
-
-        return -1;
     }
 
   private:
     memoryt memory_;
     parsert parser_;
 
-    std::vector<sizet> targets_;
+    std::vector<int> targets_;
     std::vector<action> actions_;
 };
 } // namespace bf

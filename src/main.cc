@@ -44,37 +44,35 @@ int main(int argc, char *argv[])
         file = f;
     }
 
-    if constexpr (bf::EnableLog)
-    {
-        bf::logger::instance().enable(logging);
+    bf::logger::instance().enable(logging);
 
-        bf::logger::instance().info("stack size {} cells", stack_size);
-        bf::logger::instance().info("cell size: {} bytes (will round to closest high)", cell_size);
-        bf::logger::instance().info("start at cell: {}", start_cell);
-        bf::logger::instance().info("elastic memory: {}", elastic ? "yes" : "no");
-        bf::logger::instance().info("wrapping: {}", wrapping ? "yes" : "no");
-    }
+    bf::logger::instance().info("stack size {} cells", stack_size);
+    bf::logger::instance().info("cell size: {} bytes (will round to closest high)", cell_size);
+    bf::logger::instance().info("start at cell: {}", start_cell);
+    bf::logger::instance().info("elastic memory: {}", elastic ? "yes" : "no");
+    bf::logger::instance().info("wrapping: {}", wrapping ? "yes" : "no");
 
     if (cell_size <= 8)
     {
-        return bf::core<int8_t>(file, stack_size, start_cell, elastic, wrapping).run();
+        bf::core<int8_t>(file, stack_size, start_cell, elastic, wrapping).run();
     }
     else if (cell_size <= 16)
     {
-        return bf::core<int16_t>(file, stack_size, start_cell, elastic, wrapping).run();
+        bf::core<int16_t>(file, stack_size, start_cell, elastic, wrapping).run();
     }
     else if (cell_size <= 32)
     {
-        return bf::core<int32_t>(file, stack_size, start_cell, elastic, wrapping).run();
+        bf::core<int32_t>(file, stack_size, start_cell, elastic, wrapping).run();
     }
     else if (cell_size <= 64)
     {
-        return bf::core<int64_t>(file, stack_size, start_cell, elastic, wrapping).run();
+        bf::core<int64_t>(file, stack_size, start_cell, elastic, wrapping).run();
     }
     else
     {
         bf::logger::instance().fatal("invalid cell size. supported values: 8, 16, 32 and 64.");
+        return -1;
     }
 
-    return -1;
+    return 0;
 }

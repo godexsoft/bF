@@ -14,12 +14,13 @@ template <typename T> class memory
 {
   public:
     using cellt = T;
-    using sizet = typename std::vector<cellt>::size_type;
 
-    memory(sizet cells, sizet start_cell = 0, bool elastic = true, bool wrapping = true)
-        : cell_idx_(start_cell)
-        , elastic_(elastic)
-        , wrapping_(wrapping)
+    memory(int cells, int start_cell = 0, bool elastic = true, bool wrapping = true)
+        : cell_idx_{start_cell}
+        , capacity_{cells}
+        , elastic_{elastic}
+        , wrapping_{wrapping}
+        , model_{}
     {
         allocate(cells);
     }
@@ -27,27 +28,24 @@ template <typename T> class memory
     inline void inc()
     {
         ++model_[cell_idx_];
-
-        logger::instance().info("+ [{}] = {} (0x{})", cell_idx_, static_cast<int>(model_[cell_idx_]),
-                                util::hex(static_cast<int>(model_[cell_idx_])).c_str());
+        debug_log('+');
     }
 
     inline void dec()
     {
         --model_[cell_idx_];
-
-        logger::instance().info("- [{}] = {} (0x{})", cell_idx_, static_cast<int>(model_[cell_idx_]),
-                                util::hex(static_cast<int>(model_[cell_idx_])).c_str());
+        debug_log('-');
     }
 
     inline void right()
     {
+        auto orig_cell = cell_idx_;
+
         if (++cell_idx_ >= capacity_)
         {
             if (elastic_)
             {
-                capacity_ *= 2;
-                model_.resize(capacity_);
+                allocate(capacity_ * 2);
             }
             else
             {
@@ -55,12 +53,14 @@ template <typename T> class memory
                 exit(-127);
             }
         }
-        sizet orig_cell = cell_idx_;
-        logger::instance().info("> [{}]=>[{}]", orig_cell, cell_idx_);
+
+        debug_log('>', orig_cell);
     }
 
     inline void left()
     {
+        auto orig_cell = cell_idx_;
+
         // wrap around if needed
         if (--cell_idx_ < 0)
         {
@@ -74,26 +74,22 @@ template <typename T> class memory
                 exit(-127);
             }
         }
-        sizet orig_cell = cell_idx_;
-        logger::instance().info("< [{}]=>[{}]", orig_cell, cell_idx_);
+
+        debug_log('<', orig_cell);
     }
 
     inline bool is_zero() { return model_[cell_idx_] == 0; }
 
     inline char read()
     {
-        logger::instance().info(". [{}] = {} (0x{})", cell_idx_, static_cast<int>(model_[cell_idx_]),
-                                util::hex(static_cast<int>(model_[cell_idx_])).c_str());
-
+        debug_log('.');
         return static_cast<char>(model_[cell_idx_]);
     }
 
     inline void write(char value)
     {
         model_[cell_idx_] = T(value);
-
-        logger::instance().info(", [{}] = {} (0x{})", cell_idx_, static_cast<int>(model_[cell_idx_]),
-                                util::hex(static_cast<int>(model_[cell_idx_])).c_str());
+        debug_log(',');
     }
 
     void dump()
@@ -176,19 +172,35 @@ template <typename T> class memory
     }
 
   private:
-    inline void allocate(sizet cells)
+    void debug_log(char op) const
     {
-        capacity_ = cells;
-        model_.resize(capacity_, 0);
+        if (EnableLog)
+        {
+            logger::instance().info("{} [{}] = {} (0x{})", op, cell_idx_, static_cast<int>(model_[cell_idx_]),
+                                    util::hex(static_cast<int>(model_[cell_idx_])).c_str());
+        }
     }
 
-    sizet cell_idx_; // current cell ptr
-    sizet capacity_; // initial capacity. this is used to wrap around
+    void debug_log(char op, int idx) const
+    {
+        if (EnableLog)
+        {
+            logger::instance().info("{} [{}]=>[{}]", op, idx, cell_idx_);
+        }
+    }
+
+    inline void allocate(int cells)
+    {
+        capacity_ = cells;
+        model_.resize(capacity_, T{});
+    }
+
+    int cell_idx_; // current cell ptr
+    int capacity_; // initial capacity. this is used to wrap around
 
     bool elastic_;  // if we wanna allocate infinite space dynamically
     bool wrapping_; // if we wanna wrap around on negative
 
     std::vector<cellt> model_;
-}; // namespace bf
-
+}; // class memory
 } // namespace bf

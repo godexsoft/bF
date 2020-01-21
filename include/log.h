@@ -5,9 +5,9 @@
 namespace bf
 {
 #ifdef ENABLE_LOG
-static constexpr bool EnableLog = true;
+inline constexpr bool EnableLog = true;
 #else
-static constexpr bool EnableLog = false;
+inline constexpr bool EnableLog = false;
 #endif
 
 class logger
@@ -31,7 +31,7 @@ class logger
     {
         if (EnableLog)
         {
-            if (enable_)
+            if (enabled())
             {
                 print("[INFO]", format, fmt::make_format_args(args...));
             }
@@ -46,7 +46,7 @@ class logger
   private:
     void print(const char *prefix, const char *format, fmt::format_args args)
     {
-        fmt::print("{}: ", prefix);
+        fmt::print("{} ", prefix);
         fmt::vprint(format, args);
         fmt::print("\n");
     }

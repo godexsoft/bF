@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <optional>
 
 namespace bf
 {
@@ -46,62 +47,42 @@ template <typename T> class parser
             file_stream_ = std::make_unique<std::ifstream>(file.data());
             if (!*file_stream_)
             {
-                logger::instance().fatal("input file '%s' could not be read.", file.data());
+                logger::instance().fatal("input file '{}' could not be read.", file.data());
                 std::exit(-1);
             }
         }
     }
 
-    action next()
+    void parse(std::function<void(size_t, action)> cb)
     {
-        char c;
+        auto cursor{0};
+        auto act{invalid};
+
         do
         {
-            if (file_stream_)
+            act = action_for_char(next());
+            if (!file_stream_ && act == start_of_input)
             {
-                if (!file_stream_->get(c))
-                {
-                    file_stream_->close();
-                    return eof;
-                }
-            }
-            else
-            {
-                std::cin.get(c);
-                if (std::cin.fail())
-                {
-                    return eof;
-                }
+                return cb(cursor, eof);
             }
 
-            if (is_valid(c))
+            if (act != invalid)
             {
-                auto act = action_for_char(c);
-                if (!file_stream_ && act == start_of_input)
-                {
-                    return eof;
-                }
-
-                return act;
+                cb(cursor, act);
+                ++cursor;
             }
-        } while (!is_valid(c));
-
-        return eof;
+        } while (act != eof);
     }
 
-    inline bool is_valid(char c) const
+  private:
+    inline action action_for_char(std::optional<char> c) const
     {
-        if (action_for_char(c) != invalid)
+        if (!c)
         {
-            return true;
+            return eof;
         }
 
-        return false;
-    }
-
-    inline action action_for_char(char c) const
-    {
-        switch (c)
+        switch (*c)
         {
         case '.':
             return output;
@@ -128,7 +109,30 @@ template <typename T> class parser
         }
     }
 
-  private:
+    inline std::optional<char> next()
+    {
+        char c;
+
+        if (file_stream_)
+        {
+            if (!file_stream_->get(c))
+            {
+                file_stream_->close();
+                return std::nullopt;
+            }
+        }
+        else
+        {
+            std::cin.get(c);
+            if (std::cin.fail())
+            {
+                return std::nullopt;
+            }
+        }
+
+        return c;
+    }
+
     std::unique_ptr<std::ifstream> file_stream_;
 }; // namespace bf
 } // namespace bf

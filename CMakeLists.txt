@@ -1,8 +1,13 @@
 cmake_minimum_required ( VERSION 3.15 )
 project ( bF )
 
-# require c++17
-set ( CMAKE_CXX_STANDARD 17 )
+# default release build
+if ( NOT CMAKE_BUILD_TYPE )
+  set( CMAKE_BUILD_TYPE Release CACHE STRING
+       "Choose the type of build, options are: None Debug Release RelWithDebInfo
+MinSizeRel."
+       FORCE )
+endif ()
 
 # possible options
 option ( BF_ENABLE_LOG  "Enables or disables logging support"  OFF )
@@ -24,13 +29,19 @@ file( GLOB_RECURSE ALL_SRC src/*.cc )
 add_executable (
   bF               "${ALL_SRC}" )
 
+target_compile_features (
+  bF    PRIVATE    cxx_std_17
+        PRIVATE    cxx_constexpr 
+        PRIVATE    cxx_auto_type 
+        PRIVATE    cxx_lambdas 
+        PRIVATE    cxx_nullptr
+        PRIVATE    cxx_variadic_templates )
+
 target_include_directories (
   bF    PRIVATE    "include" 
         PRIVATE    "lib/libfmt/include"
         PRIVATE    "lib/cxx_argp"
         PRIVATE    "${ARGP_INCLUDE_PATH}" )
-target_compile_options (
-  bF    PRIVATE    "-O3" )
 target_link_libraries (
   bF    PRIVATE    "${ARGP_LIBRARIES}"
         PRIVATE    fmt::fmt-header-only )
