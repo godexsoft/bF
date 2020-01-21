@@ -1,50 +1,43 @@
-cmake_minimum_required(VERSION 2.8)
-project(bF)
+cmake_minimum_required ( VERSION 3.15 )
+project ( bF )
 
-# project settings 
-set(BF_ENABLE_LOG false)
+# require c++17
+set ( CMAKE_CXX_STANDARD 17 )
 
-if (BF_ENABLE_LOG) 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DENABLE_LOG=1")
-endif()
+# possible options
+option ( BF_ENABLE_LOG  "Enables or disables logging support"  OFF )
 
-# add modules
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/externals/cmake-argp/cmake" ${CMAKE_MODULE_PATH})
+MESSAGE ( STATUS "bF Options:" ) 
+MESSAGE ( STATUS "----" ) 
+MESSAGE ( STATUS "BF_ENABLE_LOG: " ${BF_ENABLE_LOG} )
+MESSAGE ( STATUS "----" ) 
 
-# set some project-wide flags
-set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-overflow -Wno-varargs -O3" )
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-overflow -Wno-varargs -O3" )
+# add used modules and libs
+set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/cmake-argp/cmake" ${CMAKE_MODULE_PATH} )
+add_subdirectory ( ${CMAKE_SOURCE_DIR}/lib/libfmt EXCLUDE_FROM_ALL )
 
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-stdlib=libc++" COMPILER_SUPPORTS_LIBCPP)
-CHECK_CXX_COMPILER_FLAG("-std=c++17" COMPILER_SUPPORTS_CXX17)
+find_package ( argp )
 
-if(COMPILER_SUPPORTS_CXX17)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+# find all source code
+file( GLOB_RECURSE ALL_SRC src/*.cc )
 
-	if(COMPILER_SUPPORTS_LIBCPP)
-    	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-	endif()
-else()
-    message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++17 support. Please use a different C++ compiler.")
-endif()
+add_executable (
+  bF               "${ALL_SRC}" )
 
-set( BINARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/pc CACHE PATH
-        "Single Directory for all Binaries")
+target_include_directories (
+  bF    PRIVATE    "include" 
+        PRIVATE    "lib/libfmt/include"
+        PRIVATE    "lib/cxx_argp"
+        PRIVATE    "${ARGP_INCLUDE_PATH}" )
+target_compile_options (
+  bF    PRIVATE    "-O3" )
+target_link_libraries (
+  bF    PRIVATE    "${ARGP_LIBRARIES}"
+        PRIVATE    fmt::fmt-header-only )
 
-# find libs
-find_package(argp)
+# add custom option-based flags
+if ( BF_ENABLE_LOG ) 
+  target_compile_options (
+    bF  PRIVATE    "-DENABLE_LOG=1" )
+endif ()
 
-# all source files
-file(GLOB_RECURSE ALL_SRC src/*.cc)
-
-# set includes
-include_directories("src" "lib/cxx_argp" "${ARGP_INCLUDE_PATH}")
-
-# compile bF
-add_executable(bF ${ALL_SRC})
-
-set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fpermissive" )
-
-# link final bF binary 
-target_link_libraries(bF ${ARGP_LIBRARIES})

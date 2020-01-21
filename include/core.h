@@ -12,11 +12,11 @@ namespace bf
 template <typename T> class core
 {
   public:
-    typedef memory<T> memoryt;
-    typedef parser<T> parsert;
-    typedef typename memory<T>::sizet sizet;
+    using memoryt = memory<T>;
+    using parsert = parser<T>;
+    using sizet = typename memory<T>::sizet;
 
-    core(const std::string &file, sizet cells, sizet start_cell, bool elastic, bool wrapping)
+    core(std::string_view file, sizet cells, sizet start_cell, bool elastic, bool wrapping)
         : memory_(cells, start_cell, elastic, wrapping)
         , parser_(file)
         , targets_(cells, 0)
@@ -27,7 +27,7 @@ template <typename T> class core
     {
         action in;
         std::vector<sizet> loops;
-        sizet parsing_cursor;
+        sizet parsing_cursor = 0;
 
         loops.reserve(128);     // should be enough depth for most programs
         actions_.reserve(1024); // probably enough for most programs. will grow if needed
@@ -63,6 +63,8 @@ template <typename T> class core
             logger::instance().fatal("unmatched '[' at %d", loops.back());
             exit(-127);
         }
+
+        logger::instance().info("RUNTIME");
 
         // runtime
         for (auto cursor = 0; cursor < actions_.size(); ++cursor)
@@ -121,7 +123,7 @@ template <typename T> class core
 
                 if (std::cin.fail())
                 {
-                    logger::instance().print("EOF received");
+                    logger::instance().info("EOF received");
                     ++cursor; // skip this input
                     continue;
                 }

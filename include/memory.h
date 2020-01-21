@@ -13,8 +13,8 @@ namespace bf
 template <typename T> class memory
 {
   public:
-    typedef T cellt;
-    typedef typename std::vector<cellt>::size_type sizet;
+    using cellt = T;
+    using sizet = typename std::vector<cellt>::size_type;
 
     memory(sizet cells, sizet start_cell = 0, bool elastic = true, bool wrapping = true)
         : cell_idx_(start_cell)
@@ -28,28 +28,16 @@ template <typename T> class memory
     {
         ++model_[cell_idx_];
 
-        if constexpr (bf::EnableLog)
-        {
-            if (logger::instance().enabled())
-            {
-                logger::instance().print("+ [%d] = %d (0x%s)", cell_idx_, static_cast<int>(model_[cell_idx_]),
-                                         util::hex(static_cast<int>(model_[cell_idx_])).c_str());
-            }
-        }
+        logger::instance().info("+ [{}] = {} (0x{})", cell_idx_, static_cast<int>(model_[cell_idx_]),
+                                util::hex(static_cast<int>(model_[cell_idx_])).c_str());
     }
 
     inline void dec()
     {
         --model_[cell_idx_];
 
-        if constexpr (bf::EnableLog)
-        {
-            if (logger::instance().enabled())
-            {
-                logger::instance().print("- [%d] = %d (0x%s)", cell_idx_, static_cast<int>(model_[cell_idx_]),
-                                         util::hex(static_cast<int>(model_[cell_idx_])).c_str());
-            }
-        }
+        logger::instance().info("- [{}] = {} (0x{})", cell_idx_, static_cast<int>(model_[cell_idx_]),
+                                util::hex(static_cast<int>(model_[cell_idx_])).c_str());
     }
 
     inline void right()
@@ -67,15 +55,8 @@ template <typename T> class memory
                 exit(-127);
             }
         }
-
-        if constexpr (bf::EnableLog)
-        {
-            if (logger::instance().enabled())
-            {
-                sizet orig_cell = cell_idx_;
-                logger::instance().print("> [%d]=>[%d]", orig_cell, cell_idx_);
-            }
-        }
+        sizet orig_cell = cell_idx_;
+        logger::instance().info("> [{}]=>[{}]", orig_cell, cell_idx_);
     }
 
     inline void left()
@@ -93,29 +74,17 @@ template <typename T> class memory
                 exit(-127);
             }
         }
-
-        if constexpr (bf::EnableLog)
-        {
-            if (logger::instance().enabled())
-            {
-                sizet orig_cell = cell_idx_;
-                logger::instance().print("< [%d]=>[%d]", orig_cell, cell_idx_);
-            }
-        }
+        sizet orig_cell = cell_idx_;
+        logger::instance().info("< [{}]=>[{}]", orig_cell, cell_idx_);
     }
 
     inline bool is_zero() { return model_[cell_idx_] == 0; }
 
     inline char read()
     {
-        if constexpr (bf::EnableLog)
-        {
-            if (logger::instance().enabled())
-            {
-                logger::instance().print(". [%d] = %d (0x%s)", cell_idx_, static_cast<int>(model_[cell_idx_]),
-                                         util::hex(static_cast<int>(model_[cell_idx_])).c_str());
-            }
-        }
+        logger::instance().info(". [{}] = {} (0x{})", cell_idx_, static_cast<int>(model_[cell_idx_]),
+                                util::hex(static_cast<int>(model_[cell_idx_])).c_str());
+
         return static_cast<char>(model_[cell_idx_]);
     }
 
@@ -123,14 +92,8 @@ template <typename T> class memory
     {
         model_[cell_idx_] = T(value);
 
-        if constexpr (bf::EnableLog)
-        {
-            if (logger::instance().enabled())
-            {
-                logger::instance().print(", [%d] = %d (0x%s)", cell_idx_, static_cast<int>(model_[cell_idx_]),
-                                         util::hex(static_cast<int>(model_[cell_idx_])).c_str());
-            }
-        }
+        logger::instance().info(", [{}] = {} (0x{})", cell_idx_, static_cast<int>(model_[cell_idx_]),
+                                util::hex(static_cast<int>(model_[cell_idx_])).c_str());
     }
 
     void dump()
@@ -226,6 +189,6 @@ template <typename T> class memory
     bool wrapping_; // if we wanna wrap around on negative
 
     std::vector<cellt> model_;
-};
+}; // namespace bf
 
 } // namespace bf

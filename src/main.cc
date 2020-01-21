@@ -48,11 +48,11 @@ int main(int argc, char *argv[])
     {
         bf::logger::instance().enable(logging);
 
-        bf::logger::instance().print("stack size %d cells", stack_size);
-        bf::logger::instance().print("cell size: %d bytes (will round to closest high)", cell_size);
-        bf::logger::instance().print("start at cell: %d", start_cell);
-        bf::logger::instance().print("elastic memory: %s", elastic ? "yes" : "no");
-        bf::logger::instance().print("wrapping: %s", wrapping ? "yes" : "no");
+        bf::logger::instance().info("stack size {} cells", stack_size);
+        bf::logger::instance().info("cell size: {} bytes (will round to closest high)", cell_size);
+        bf::logger::instance().info("start at cell: {}", start_cell);
+        bf::logger::instance().info("elastic memory: {}", elastic ? "yes" : "no");
+        bf::logger::instance().info("wrapping: {}", wrapping ? "yes" : "no");
     }
 
     if (cell_size <= 8)

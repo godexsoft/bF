@@ -39,14 +39,14 @@ enum action : char
 template <typename T> class parser
 {
   public:
-    parser(const std::string &file)
+    parser(std::string_view file)
     {
         if (!file.empty())
         {
-            file_stream_ = std::make_unique<std::ifstream>(file.c_str());
+            file_stream_ = std::make_unique<std::ifstream>(file.data());
             if (!*file_stream_)
             {
-                logger::instance().fatal("input file '%s' could not be read.", file.c_str());
+                logger::instance().fatal("input file '%s' could not be read.", file.data());
                 std::exit(-1);
             }
         }
