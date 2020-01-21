@@ -5,21 +5,23 @@
 
 #include <fstream>
 #include <iostream>
+
 using namespace std;
+using namespace bf;
 
 int main(int argc, char *argv[])
 {
     cxx_argp::parser args{1}; // "-" for stdin input
 
-    int64_t stack_size = 30000;
-    int64_t cell_size = 8;
-    int64_t start_cell = 0;
-    bool elastic = false;
-    bool wrapping = false;
-    std::string file;
-    bool logging = false;
+    int64_t stack_size{30000};
+    int64_t cell_size{8};
+    int64_t start_cell{0};
+    auto elastic{false};
+    auto wrapping{false};
+    string file{};
+    auto logging{false};
 
-    args.add_option({"stack-size", 's', "cells", 30000, "Stack size in cells"}, stack_size);
+    args.add_option({"stack-size", 's', "cells", 0, "Stack size in cells"}, stack_size);
     args.add_option({"cell-size", 'c', "bits", 0, "Cell size in bits"}, cell_size);
     args.add_option({"start-cell", 'i', "cell", 0, "Cell index for start cell"}, start_cell);
 
@@ -33,7 +35,7 @@ int main(int argc, char *argv[])
 
     if (!args.parse(argc, argv, "[filename or -]", "Options:"))
     {
-        bf::logger::instance().fatal("there was an error parsing args");
+        logger::instance().fatal("there was an error parsing args");
         return 1;
     }
 
@@ -44,33 +46,33 @@ int main(int argc, char *argv[])
         file = f;
     }
 
-    bf::logger::instance().enable(logging);
+    logger::instance().enable(logging);
 
-    bf::logger::instance().info("stack size {} cells", stack_size);
-    bf::logger::instance().info("cell size: {} bytes (will round to closest high)", cell_size);
-    bf::logger::instance().info("start at cell: {}", start_cell);
-    bf::logger::instance().info("elastic memory: {}", elastic ? "yes" : "no");
-    bf::logger::instance().info("wrapping: {}", wrapping ? "yes" : "no");
+    logger::instance().info("stack size {} cells", stack_size);
+    logger::instance().info("cell size: {} bytes (will round to closest high)", cell_size);
+    logger::instance().info("start at cell: {}", start_cell);
+    logger::instance().info("elastic memory: {}", elastic ? "yes" : "no");
+    logger::instance().info("wrapping: {}", wrapping ? "yes" : "no");
 
     if (cell_size <= 8)
     {
-        bf::core<int8_t>(file, stack_size, start_cell, elastic, wrapping).run();
+        core<int8_t>(file, stack_size, start_cell, elastic, wrapping).execute();
     }
     else if (cell_size <= 16)
     {
-        bf::core<int16_t>(file, stack_size, start_cell, elastic, wrapping).run();
+        core<int16_t>(file, stack_size, start_cell, elastic, wrapping).execute();
     }
     else if (cell_size <= 32)
     {
-        bf::core<int32_t>(file, stack_size, start_cell, elastic, wrapping).run();
+        core<int32_t>(file, stack_size, start_cell, elastic, wrapping).execute();
     }
     else if (cell_size <= 64)
     {
-        bf::core<int64_t>(file, stack_size, start_cell, elastic, wrapping).run();
+        core<int64_t>(file, stack_size, start_cell, elastic, wrapping).execute();
     }
     else
     {
-        bf::logger::instance().fatal("invalid cell size. supported values: 8, 16, 32 and 64.");
+        logger::instance().fatal("invalid cell size. supported values: 8, 16, 32 and 64.");
         return -1;
     }
 

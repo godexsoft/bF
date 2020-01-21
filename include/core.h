@@ -22,18 +22,24 @@ template <typename T> class core
         , parser_{file}
         , targets_(cells, 0)
     {
+        tape_.reserve(1024); // probably enough for most programs. will grow if needed
     }
 
-    void run()
+    void execute()
+    {
+        compile();
+        run();
+    }
+
+  private:
+    void compile()
     {
         std::vector<int> loops;
-
-        loops.reserve(128);     // should be enough depth for most programs
-        actions_.reserve(1024); // probably enough for most programs. will grow if needed
+        loops.reserve(128); // should be enough depth for most programs
 
         // parsing
         parser_.parse([&](auto cursor, auto act) {
-            actions_.push_back(act);
+            tape_.push_back(act);
 
             switch (act)
             {
@@ -64,46 +70,41 @@ template <typename T> class core
             logger::instance().fatal("unmatched '[' at {}", loops.back());
             exit(-127);
         }
+    }
 
-        // runtime
-        for (auto cursor = 0; cursor < actions_.size(); ++cursor)
+    void run()
+    {
+        for (auto cursor = 0; cursor < tape_.size(); ++cursor)
         {
-            auto act = actions_.at(cursor);
-
-            if (act == loop_start)
+            switch (tape_.at(cursor))
             {
+            case loop_start:
                 if (memory_.is_zero())
                 {
                     cursor = targets_.at(cursor);
                 }
-            }
-            else if (act == loop_end)
-            {
+                break;
+            case loop_end:
                 if (!memory_.is_zero())
                 {
                     cursor = targets_.at(cursor);
                 }
-            }
-            else if (act == increment)
-            {
+                break;
+            case increment:
                 memory_.inc();
-            }
-            else if (act == decrement)
-            {
+                break;
+            case decrement:
                 memory_.dec();
-            }
-            else if (act == move_left)
-            {
+                break;
+            case move_left:
                 memory_.left();
-            }
-            else if (act == move_right)
-            {
+                break;
+            case move_right:
                 memory_.right();
-            }
-            else if (act == output)
-            {
+                break;
+            case output: {
                 // only print \n if it's a 10 (bf way)
-                char c = memory_.read();
+                auto c = memory_.read();
                 if (c == T(10))
                 {
                     fmt::print("\n");
@@ -113,9 +114,9 @@ template <typename T> class core
                     fmt::print("{}", c);
                 }
             }
-            else if (act == input)
-            {
-                char c;
+            break;
+            case input: {
+                char c{};
 
                 std::cin.clear();
                 std::cin.get(c);
@@ -123,6 +124,8 @@ template <typename T> class core
                 if (std::cin.fail())
                 {
                     logger::instance().info("EOF received");
+                    ++cursor; // skip input
+
                     continue;
                 }
 
@@ -135,22 +138,21 @@ template <typename T> class core
                     memory_.write(c);
                 }
             }
-            else if (act == memory_dump)
-            {
+            break;
+            case memory_dump:
                 memory_.dump();
-            }
-            else if (act == start_of_input)
-            {
-                // nop at runtime
+                break;
+            default:
+                // nop
+                break;
             }
         }
     }
 
-  private:
     memoryt memory_;
     parsert parser_;
 
-    std::vector<int> targets_;
-    std::vector<action> actions_;
+    std::vector<unsigned int> targets_;
+    std::vector<action> tape_;
 };
 } // namespace bf

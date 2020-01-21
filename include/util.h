@@ -12,7 +12,7 @@ template <typename T> static int constexpr hex_width()
     return sizeof(T) * 2;
 }
 
-template <typename T> inline static std::string hex(T value)
+template <typename T> static std::string hex(T value)
 {
     constexpr int width = hex_width<T>();
 

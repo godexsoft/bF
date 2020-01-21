@@ -53,7 +53,7 @@ template <typename T> class parser
         }
     }
 
-    void parse(std::function<void(size_t, action)> cb)
+    void parse(std::function<void(unsigned int, action)> cb)
     {
         auto cursor{0};
         auto act{invalid};
@@ -75,7 +75,7 @@ template <typename T> class parser
     }
 
   private:
-    inline action action_for_char(std::optional<char> c) const
+    action action_for_char(std::optional<char> c) const
     {
         if (!c)
         {
@@ -109,7 +109,7 @@ template <typename T> class parser
         }
     }
 
-    inline std::optional<char> next()
+    std::optional<char> next()
     {
         char c;
 

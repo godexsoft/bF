@@ -25,21 +25,21 @@ template <typename T> class memory
         allocate(cells);
     }
 
-    inline void inc()
+    void inc()
     {
         ++model_[cell_idx_];
         debug_log('+');
     }
 
-    inline void dec()
+    void dec()
     {
         --model_[cell_idx_];
         debug_log('-');
     }
 
-    inline void right()
+    void right()
     {
-        auto orig_cell = cell_idx_;
+        auto orig_cell{cell_idx_};
 
         if (++cell_idx_ >= capacity_)
         {
@@ -59,7 +59,7 @@ template <typename T> class memory
 
     inline void left()
     {
-        auto orig_cell = cell_idx_;
+        auto orig_cell{cell_idx_};
 
         // wrap around if needed
         if (--cell_idx_ < 0)
@@ -78,21 +78,21 @@ template <typename T> class memory
         debug_log('<', orig_cell);
     }
 
-    inline bool is_zero() { return model_[cell_idx_] == 0; }
+    bool is_zero() const { return model_[cell_idx_] == 0; }
 
-    inline char read()
+    char read() const
     {
         debug_log('.');
         return static_cast<char>(model_[cell_idx_]);
     }
 
-    inline void write(char value)
+    void write(char value)
     {
         model_[cell_idx_] = T(value);
         debug_log(',');
     }
 
-    void dump()
+    void dump() const
     {
         auto distance = 128;                                                  // total cells to show in dump
         auto from_cell = std::max(0, static_cast<int>(cell_idx_ - distance)); // find cell to start from
@@ -189,7 +189,7 @@ template <typename T> class memory
         }
     }
 
-    inline void allocate(int cells)
+    void allocate(int cells)
     {
         capacity_ = cells;
         model_.resize(capacity_, T{});
