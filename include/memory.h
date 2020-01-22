@@ -13,53 +13,39 @@ namespace bf
 template <typename T> class memory
 {
   public:
-    typedef T cellt;
-    typedef typename std::vector<cellt>::size_type sizet;
+    using cellt = T;
 
-    memory(sizet cells, sizet start_cell = 0, bool elastic = true, bool wrapping = true)
-        : cell_idx_(start_cell)
-        , elastic_(elastic)
-        , wrapping_(wrapping)
+    memory(int cells, int start_cell = 0, bool elastic = true, bool wrapping = true)
+        : cell_idx_{start_cell}
+        , capacity_{cells}
+        , elastic_{elastic}
+        , wrapping_{wrapping}
+        , model_{}
     {
         allocate(cells);
     }
 
-    inline void inc()
+    void inc() noexcept
     {
         ++model_[cell_idx_];
-
-        if constexpr (bf::EnableLog)
-        {
-            if (logger::instance().enabled())
-            {
-                logger::instance().print("+ [%d] = %d (0x%s)", cell_idx_, static_cast<int>(model_[cell_idx_]),
-                                         util::hex(static_cast<int>(model_[cell_idx_])).c_str());
-            }
-        }
+        debug_log('+');
     }
 
-    inline void dec()
+    void dec() noexcept
     {
         --model_[cell_idx_];
-
-        if constexpr (bf::EnableLog)
-        {
-            if (logger::instance().enabled())
-            {
-                logger::instance().print("- [%d] = %d (0x%s)", cell_idx_, static_cast<int>(model_[cell_idx_]),
-                                         util::hex(static_cast<int>(model_[cell_idx_])).c_str());
-            }
-        }
+        debug_log('-');
     }
 
-    inline void right()
+    void right()
     {
+        auto orig_cell{cell_idx_};
+
         if (++cell_idx_ >= capacity_)
         {
             if (elastic_)
             {
-                capacity_ *= 2;
-                model_.resize(capacity_);
+                allocate(capacity_ * 2);
             }
             else
             {
@@ -68,18 +54,13 @@ template <typename T> class memory
             }
         }
 
-        if constexpr (bf::EnableLog)
-        {
-            if (logger::instance().enabled())
-            {
-                sizet orig_cell = cell_idx_;
-                logger::instance().print("> [%d]=>[%d]", orig_cell, cell_idx_);
-            }
-        }
+        debug_log('>', orig_cell);
     }
 
-    inline void left()
+    void left()
     {
+        auto orig_cell{cell_idx_};
+
         // wrap around if needed
         if (--cell_idx_ < 0)
         {
@@ -94,46 +75,24 @@ template <typename T> class memory
             }
         }
 
-        if constexpr (bf::EnableLog)
-        {
-            if (logger::instance().enabled())
-            {
-                sizet orig_cell = cell_idx_;
-                logger::instance().print("< [%d]=>[%d]", orig_cell, cell_idx_);
-            }
-        }
+        debug_log('<', orig_cell);
     }
 
-    inline bool is_zero() { return model_[cell_idx_] == 0; }
+    bool is_zero() const noexcept { return model_[cell_idx_] == 0; }
 
-    inline char read()
+    char read() const noexcept
     {
-        if constexpr (bf::EnableLog)
-        {
-            if (logger::instance().enabled())
-            {
-                logger::instance().print(". [%d] = %d (0x%s)", cell_idx_, static_cast<int>(model_[cell_idx_]),
-                                         util::hex(static_cast<int>(model_[cell_idx_])).c_str());
-            }
-        }
+        debug_log('.');
         return static_cast<char>(model_[cell_idx_]);
     }
 
-    inline void write(char value)
+    void write(char value) noexcept
     {
         model_[cell_idx_] = T(value);
-
-        if constexpr (bf::EnableLog)
-        {
-            if (logger::instance().enabled())
-            {
-                logger::instance().print(", [%d] = %d (0x%s)", cell_idx_, static_cast<int>(model_[cell_idx_]),
-                                         util::hex(static_cast<int>(model_[cell_idx_])).c_str());
-            }
-        }
+        debug_log(',');
     }
 
-    void dump()
+    void dump() const
     {
         auto distance = 128;                                                  // total cells to show in dump
         auto from_cell = std::max(0, static_cast<int>(cell_idx_ - distance)); // find cell to start from
@@ -213,19 +172,35 @@ template <typename T> class memory
     }
 
   private:
-    inline void allocate(sizet cells)
+    void debug_log(char op) const
     {
-        capacity_ = cells;
-        model_.resize(capacity_, 0);
+        if (EnableLog)
+        {
+            logger::instance().info("{} [{}] = {} (0x{})", op, cell_idx_, static_cast<int>(model_[cell_idx_]),
+                                    util::hex(static_cast<int>(model_[cell_idx_])).c_str());
+        }
     }
 
-    sizet cell_idx_; // current cell ptr
-    sizet capacity_; // initial capacity. this is used to wrap around
+    void debug_log(char op, int idx) const
+    {
+        if (EnableLog)
+        {
+            logger::instance().info("{} [{}]=>[{}]", op, idx, cell_idx_);
+        }
+    }
+
+    void allocate(int cells)
+    {
+        capacity_ = cells;
+        model_.resize(capacity_, T{});
+    }
+
+    int cell_idx_; // current cell ptr
+    int capacity_; // initial capacity. this is used to wrap around
 
     bool elastic_;  // if we wanna allocate infinite space dynamically
     bool wrapping_; // if we wanna wrap around on negative
 
     std::vector<cellt> model_;
-};
-
+}; // class memory
 } // namespace bf

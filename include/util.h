@@ -9,7 +9,7 @@ namespace util
 {
 template <typename T> static int constexpr hex_width()
 {
-    return sizeof(T) * 2;    
+    return sizeof(T) * 2;
 }
 
 template <typename T> static std::string hex(T value)

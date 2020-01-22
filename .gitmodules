@@ -1,3 +1,6 @@
 [submodule "lib/cxx_argp"]
 	path = lib/cxx_argp
 	url = https://github.com/pboettch/cxx_argp.git
+[submodule "lib/libfmt"]
+	path = lib/libfmt
+	url = https://github.com/fmtlib/fmt.git
