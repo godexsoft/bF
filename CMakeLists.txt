@@ -43,7 +43,8 @@ target_include_directories (
         PRIVATE    "lib/cxx_argp"
         PRIVATE    "${ARGP_INCLUDE_PATH}" )
 target_link_libraries (
-  bF    PRIVATE    "${ARGP_LIBRARIES}"
+  bF    PRIVATE    "-lstdc++" 
+        PRIVATE    "${ARGP_LIBRARIES}"
         PRIVATE    fmt::fmt-header-only )
 
 # add custom option-based flags
