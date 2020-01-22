@@ -29,7 +29,7 @@ install *argp* using brew:
 
 The project is configured and built using CMake.
 
-Logging is disabled by default but can be enabled using DF_ENABLE_LOG cmake option:
+Logging is disabled by default but can be enabled using *BF_ENABLE_LOG* cmake option:
 
     $ cmake -DBF_ENABLE_LOG=ON ..
 
