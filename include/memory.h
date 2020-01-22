@@ -25,13 +25,13 @@ template <typename T> class memory
         allocate(cells);
     }
 
-    void inc()
+    void inc() noexcept
     {
         ++model_[cell_idx_];
         debug_log('+');
     }
 
-    void dec()
+    void dec() noexcept
     {
         --model_[cell_idx_];
         debug_log('-');
@@ -78,15 +78,15 @@ template <typename T> class memory
         debug_log('<', orig_cell);
     }
 
-    bool is_zero() const { return model_[cell_idx_] == 0; }
+    bool is_zero() const noexcept { return model_[cell_idx_] == 0; }
 
-    char read() const
+    char read() const noexcept
     {
         debug_log('.');
         return static_cast<char>(model_[cell_idx_]);
     }
 
-    void write(char value)
+    void write(char value) noexcept
     {
         model_[cell_idx_] = T(value);
         debug_log(',');
