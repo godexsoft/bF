@@ -57,7 +57,7 @@ template <typename T> class memory
         debug_log('>', orig_cell);
     }
 
-    inline void left()
+    void left()
     {
         auto orig_cell{cell_idx_};
 
