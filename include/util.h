@@ -12,9 +12,9 @@ template <typename T> static int constexpr hex_width()
     return sizeof(T) * 2;
 }
 
-template <typename T> static std::string hex(T value)
+template <typename T> static decltype(auto) hex(T value)
 {
-    constexpr int width = hex_width<T>();
+    constexpr auto width = hex_width<T>();
 
     std::stringstream iss;
     iss << std::setfill('0') << std::right << std::setw(width) << std::hex << static_cast<int64_t>(value);
@@ -26,17 +26,17 @@ template <typename T> static std::string hex(T value)
     return out.substr(out.length() - width, width);
 }
 
-template <typename T> static char to_readable(T value, char placeholder = '.')
+template <typename T> static decltype(auto) to_readable(T value, char placeholder = '.')
 {
     if (std::isalnum(value))
     {
-        return value;
+        return static_cast<char>(value);
     }
 
     return placeholder;
 }
 
-template <typename T> static std::string bold_underline(const T &data)
+template <typename T> static decltype(auto) bold_underline(T data)
 {
     return std::string("\u001b[1m\u001b[4m") + data + "\u001b[0m";
 }

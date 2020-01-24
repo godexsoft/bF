@@ -21,7 +21,7 @@ namespace bf
 // !    If input file is not specified this symbol will separate code from input data in STDIN
 // #    Prints a full memory dump around current memory pointer
 
-enum action : char
+enum class action : char
 {
     eof = 0,
     move_left = '<',
@@ -56,56 +56,56 @@ template <typename T> class parser
     void parse(std::function<void(unsigned int, action)> cb)
     {
         auto cursor{0};
-        auto act{invalid};
+        auto act{action::invalid};
 
         do
         {
-            act = action_for_char(next());
-            if (!file_stream_ && act == start_of_input)
+            act = parse_action(next());
+            if (!file_stream_ && act == action::start_of_input)
             {
-                return cb(cursor, eof);
+                return cb(cursor, action::eof);
             }
 
-            if (act != invalid)
+            if (act != action::invalid)
             {
                 cb(cursor, act);
                 ++cursor;
             }
-        } while (act != eof);
+        } while (act != action::eof);
     }
 
   private:
-    action action_for_char(std::optional<char> c) const
+    action parse_action(std::optional<char> c) const
     {
         if (!c)
         {
-            return eof;
+            return action::eof;
         }
 
         switch (*c)
         {
         case '.':
-            return output;
+            return action::output;
         case ',':
-            return input;
+            return action::input;
         case '[':
-            return loop_start;
+            return action::loop_start;
         case ']':
-            return loop_end;
+            return action::loop_end;
         case '<':
-            return move_left;
+            return action::move_left;
         case '>':
-            return move_right;
+            return action::move_right;
         case '+':
-            return increment;
+            return action::increment;
         case '-':
-            return decrement;
+            return action::decrement;
         case '!':
-            return start_of_input;
+            return action::start_of_input;
         case '#':
-            return memory_dump;
+            return action::memory_dump;
         default:
-            return invalid;
+            return action::invalid;
         }
     }
 
