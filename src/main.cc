@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 
     logger::instance().enable(logging);
 
-    logger::instance().info("stack size {} cells", stack_size);
+    logger::instance().info("stack size: {} cells", stack_size);
     logger::instance().info("start at cell: {}", start_cell);
     logger::instance().info("elastic memory: {}", elastic ? "yes" : "no");
     logger::instance().info("wrapping: {}", wrapping ? "yes" : "no");
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
 
     if (!supported.empty())
     {
-        supported.pop_back();
+        supported.pop_back(); // removes last space
     }
     else
     {

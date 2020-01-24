@@ -6,7 +6,6 @@
 #include <fstream>
 #include <iostream>
 #include <map>
-
 #include <fmt/format.h>
 
 namespace bf
@@ -14,8 +13,8 @@ namespace bf
 template <typename T> class core
 {
   public:
-    using memoryt = memory<T>;
-    using parsert = parser<T>;
+    using memory_t = memory<T>;
+    using parser_t = parser<T>;
 
     core(std::string_view file, uint64_t cells, uint64_t start_cell, bool elastic, bool wrapping)
         : memory_{cells, start_cell, elastic, wrapping}
@@ -151,8 +150,8 @@ template <typename T> class core
         }
     }
 
-    memoryt memory_;
-    parsert parser_;
+    memory_t memory_;
+    parser_t parser_;
 
     std::vector<uint64_t> targets_;
     std::vector<action> tape_;

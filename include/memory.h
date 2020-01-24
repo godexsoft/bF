@@ -13,7 +13,7 @@ namespace bf
 template <typename T> class memory
 {
   public:
-    using cellt = T;
+    using cell_t = T;
 
     memory(uint64_t cells, uint64_t start_cell = 0, bool elastic = true, bool wrapping = true)
         : cell_idx_{start_cell}
@@ -201,6 +201,6 @@ template <typename T> class memory
     bool elastic_;  // if we wanna allocate infinite space dynamically
     bool wrapping_; // if we wanna wrap around on negative
 
-    std::vector<cellt> model_;
+    std::vector<cell_t> model_;
 }; // class memory
 } // namespace bf
