@@ -17,7 +17,7 @@ template <typename T> class core
     using memoryt = memory<T>;
     using parsert = parser<T>;
 
-    core(std::string_view file, int cells, int start_cell, bool elastic, bool wrapping)
+    core(std::string_view file, uint64_t cells, uint64_t start_cell, bool elastic, bool wrapping)
         : memory_{cells, start_cell, elastic, wrapping}
         , parser_{file}
         , targets_(cells, 0)
@@ -25,16 +25,18 @@ template <typename T> class core
         tape_.reserve(1024); // probably enough for most programs. will grow if needed
     }
 
-    void execute()
+    int execute()
     {
         compile();
         run();
+
+        return 0; // for now assume all good
     }
 
   private:
     void compile()
     {
-        std::vector<int> loops;
+        std::vector<uint64_t> loops;
         loops.reserve(128); // should be enough depth for most programs
 
         // parsing
@@ -43,10 +45,10 @@ template <typename T> class core
 
             switch (act)
             {
-            case loop_start:
+            case action::loop_start:
                 loops.push_back(cursor);
                 break;
-            case loop_end: {
+            case action::loop_end: {
                 if (loops.empty())
                 {
                     logger::instance().fatal("unmatched ']' at {}", cursor);
@@ -78,31 +80,31 @@ template <typename T> class core
         {
             switch (tape_.at(cursor))
             {
-            case loop_start:
+            case action::loop_start:
                 if (memory_.is_zero())
                 {
                     cursor = targets_.at(cursor);
                 }
                 break;
-            case loop_end:
+            case action::loop_end:
                 if (!memory_.is_zero())
                 {
                     cursor = targets_.at(cursor);
                 }
                 break;
-            case increment:
+            case action::increment:
                 memory_.inc();
                 break;
-            case decrement:
+            case action::decrement:
                 memory_.dec();
                 break;
-            case move_left:
+            case action::move_left:
                 memory_.left();
                 break;
-            case move_right:
+            case action::move_right:
                 memory_.right();
                 break;
-            case output: {
+            case action::output: {
                 // only print \n if it's a 10 (bf way)
                 auto c = memory_.read();
                 if (c == T(10))
@@ -115,7 +117,7 @@ template <typename T> class core
                 }
             }
             break;
-            case input: {
+            case action::input: {
                 char c{};
 
                 std::cin.clear();
@@ -139,7 +141,7 @@ template <typename T> class core
                 }
             }
             break;
-            case memory_dump:
+            case action::memory_dump:
                 memory_.dump();
                 break;
             default:
@@ -152,7 +154,7 @@ template <typename T> class core
     memoryt memory_;
     parsert parser_;
 
-    std::vector<unsigned int> targets_;
+    std::vector<uint64_t> targets_;
     std::vector<action> tape_;
 };
 } // namespace bf

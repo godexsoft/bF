@@ -1,20 +1,27 @@
 cmake_minimum_required ( VERSION 3.15 )
 project ( bF )
 
-# default release build
+# default to release build
 if ( NOT CMAKE_BUILD_TYPE )
   set( CMAKE_BUILD_TYPE Release CACHE STRING
-       "Choose the type of build, options are: None Debug Release RelWithDebInfo
-MinSizeRel."
+       "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
        FORCE )
 endif ()
 
 # possible options
-option ( BF_ENABLE_LOG  "Enables or disables logging support"  OFF )
+option ( BF_ENABLE_LOG   "Enables or disables logging support"  OFF )
+option ( BF_ENABLE_8BIT  "Enables 8 bit cell size"  ON )
+option ( BF_ENABLE_16BIT "Enables 16 bit cell size"  OFF )
+option ( BF_ENABLE_32BIT "Enables 32 bit cell size"  OFF )
+option ( BF_ENABLE_64BIT "Enables 64 bit cell size"  OFF )
 
 MESSAGE ( STATUS "bF Options:" ) 
 MESSAGE ( STATUS "----" ) 
-MESSAGE ( STATUS "BF_ENABLE_LOG: " ${BF_ENABLE_LOG} )
+MESSAGE ( STATUS "BF_ENABLE_LOG:   " ${BF_ENABLE_LOG} )
+MESSAGE ( STATUS "BF_ENABLE_8BIT:  " ${BF_ENABLE_8BIT} )
+MESSAGE ( STATUS "BF_ENABLE_16BIT: " ${BF_ENABLE_16BIT} )
+MESSAGE ( STATUS "BF_ENABLE_32BIT: " ${BF_ENABLE_32BIT} )
+MESSAGE ( STATUS "BF_ENABLE_64BIT: " ${BF_ENABLE_64BIT} )
 MESSAGE ( STATUS "----" ) 
 
 # add used modules and libs
@@ -23,33 +30,59 @@ add_subdirectory ( ${CMAKE_SOURCE_DIR}/lib/libfmt EXCLUDE_FROM_ALL )
 
 find_package ( argp )
 
-# find all source code
-file( GLOB_RECURSE ALL_SRC src/*.cc )
-
-add_executable (
-  bF               "${ALL_SRC}" )
+# bF library
+add_library ( libbF INTERFACE )
 
 target_compile_features (
-  bF    PRIVATE    cxx_std_17
-        PRIVATE    cxx_constexpr 
-        PRIVATE    cxx_auto_type 
-        PRIVATE    cxx_lambdas 
-        PRIVATE    cxx_nullptr
-        PRIVATE    cxx_variadic_templates )
+  libbF INTERFACE  cxx_std_17
+        INTERFACE  cxx_constexpr 
+        INTERFACE  cxx_auto_type 
+        INTERFACE  cxx_lambdas 
+        INTERFACE  cxx_nullptr
+        INTERFACE  cxx_variadic_templates )
 
 target_include_directories (
-  bF    PRIVATE    "include" 
-        PRIVATE    "lib/libfmt/include"
-        PRIVATE    "lib/cxx_argp"
-        PRIVATE    "${ARGP_INCLUDE_PATH}" )
+  libbF INTERFACE  "include" 
+        INTERFACE  "lib/libfmt/include" )
 target_link_libraries (
-  bF    PRIVATE    "-lstdc++" 
-        PRIVATE    "${ARGP_LIBRARIES}"
-        PRIVATE    fmt::fmt-header-only )
+  libbF INTERFACE  "-lstdc++" 
+        INTERFACE  fmt::fmt-header-only )
 
-# add custom option-based flags
+# add custom option-based flags for the library
 if ( BF_ENABLE_LOG ) 
   target_compile_options (
-    bF  PRIVATE    "-DENABLE_LOG=1" )
+    libbF   INTERFACE    "-DENABLE_LOG=1" )
 endif ()
 
+# bF app itself
+file( GLOB_RECURSE ALL_SRC src/*.cc )
+add_executable (
+  bF    "${ALL_SRC}" )
+
+target_include_directories (
+  bF    PRIVATE    "lib/cxx_argp"
+        PRIVATE    "${ARGP_INCLUDE_PATH}" )        
+target_link_libraries (
+  bF    PRIVATE    "${ARGP_LIBRARIES}"
+        PRIVATE    libbF )
+
+# add custom option-based flags for the example app
+if ( BF_ENABLE_8BIT ) 
+  target_compile_options (
+    bF   PRIVATE    "-DENABLE_8BIT=1" )
+endif ()
+
+if ( BF_ENABLE_16BIT ) 
+  target_compile_options (
+    bF   PRIVATE    "-DENABLE_16BIT=1" )
+endif ()
+
+if ( BF_ENABLE_32BIT ) 
+  target_compile_options (
+    bF   PRIVATE    "-DENABLE_32BIT=1" )
+endif ()
+
+if ( BF_ENABLE_64BIT ) 
+  target_compile_options (
+    bF   PRIVATE    "-DENABLE_64BIT=1" )
+endif ()

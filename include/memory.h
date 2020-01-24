@@ -15,7 +15,7 @@ template <typename T> class memory
   public:
     using cellt = T;
 
-    memory(int cells, int start_cell = 0, bool elastic = true, bool wrapping = true)
+    memory(uint64_t cells, uint64_t start_cell = 0, bool elastic = true, bool wrapping = true)
         : cell_idx_{start_cell}
         , capacity_{cells}
         , elastic_{elastic}
@@ -195,8 +195,8 @@ template <typename T> class memory
         model_.resize(capacity_, T{});
     }
 
-    int cell_idx_; // current cell ptr
-    int capacity_; // initial capacity. this is used to wrap around
+    uint64_t cell_idx_; // current cell ptr
+    uint64_t capacity_; // initial capacity. this is used to wrap around
 
     bool elastic_;  // if we wanna allocate infinite space dynamically
     bool wrapping_; // if we wanna wrap around on negative

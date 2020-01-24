@@ -4,24 +4,28 @@
 
 namespace bf
 {
+    
 #ifdef ENABLE_LOG
-inline constexpr bool EnableLog = true;
+    inline constexpr bool EnableLog = true;
 #else
-inline constexpr bool EnableLog = false;
+    inline constexpr bool EnableLog = false;
 #endif
 
 class logger
 {
+  private:
+    logger() : enable_(false) { }
+
   public:
-    static logger &instance()
+    logger(const logger&) = delete;
+    logger& operator=(const logger &) = delete;
+    logger(logger &&) = delete;
+    logger & operator=(logger &&) = delete;
+
+    static auto &instance()
     {
         static logger log;
         return log;
-    }
-
-    logger(bool enable = false)
-        : enable_(enable)
-    {
     }
 
     void enable(bool enable) { enable_ = enable; }
@@ -29,7 +33,7 @@ class logger
 
     template <typename... Args> void info(const char *format, const Args &... args)
     {
-        if (EnableLog)
+        if constexpr (EnableLog)
         {
             if (enabled())
             {
