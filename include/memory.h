@@ -113,7 +113,7 @@ template <typename T> class memory
 
         auto separator_at = cells_per_row / 2 - 1; // place extra separator in the middle
 
-        std::cerr << std::endl; // make some space on the screen
+        std::cout << std::endl; // make some space on the screen
 
         std::stringstream dump_ss;
         std::stringstream content_ss;
@@ -170,7 +170,7 @@ template <typename T> class memory
 
         // dump the last bit
         dump_ss << std::endl;
-        std::cerr << dump_ss.str();
+        std::cout << dump_ss.str();
     }
 
   private:
