@@ -25,10 +25,7 @@ MESSAGE ( STATUS "BF_ENABLE_64BIT: " ${BF_ENABLE_64BIT} )
 MESSAGE ( STATUS "----" ) 
 
 # add used modules and libs
-set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/cmake-argp/cmake" ${CMAKE_MODULE_PATH} )
 add_subdirectory ( ${CMAKE_SOURCE_DIR}/lib/libfmt EXCLUDE_FROM_ALL )
-
-find_package ( argp )
 
 # bF library
 add_library ( libbF INTERFACE )
@@ -60,11 +57,9 @@ add_executable (
   bF    "${ALL_SRC}" )
 
 target_include_directories (
-  bF    PRIVATE    "lib/cxx_argp"
-        PRIVATE    "${ARGP_INCLUDE_PATH}" )        
+  bF    PRIVATE    "lib/cxxopts/include" )        
 target_link_libraries (
-  bF    PRIVATE    "${ARGP_LIBRARIES}"
-        PRIVATE    libbF )
+  bF    PRIVATE    libbF )
 
 # add custom option-based flags for the example app
 if ( BF_ENABLE_8BIT ) 
