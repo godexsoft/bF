@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 
         if (result.count("help"))
         {
-            fmt::print(options.help({"", "Group"}));
+            fmt::print(options.help({""}));
             return 0;
         }
 

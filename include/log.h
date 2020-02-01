@@ -4,23 +4,26 @@
 
 namespace bf
 {
-    
+
 #ifdef ENABLE_LOG
-    inline constexpr bool EnableLog = true;
+inline constexpr bool EnableLog = true;
 #else
-    inline constexpr bool EnableLog = false;
+inline constexpr bool EnableLog = false;
 #endif
 
 class logger
 {
   private:
-    logger() : enable_(false) { }
+    logger()
+        : enable_(false)
+    {
+    }
 
   public:
-    logger(const logger&) = delete;
-    logger& operator=(const logger &) = delete;
+    logger(const logger &) = delete;
+    logger &operator=(const logger &) = delete;
     logger(logger &&) = delete;
-    logger & operator=(logger &&) = delete;
+    logger &operator=(logger &&) = delete;
 
     static auto &instance()
     {
@@ -50,9 +53,9 @@ class logger
   private:
     void print(const char *prefix, const char *format, fmt::format_args args)
     {
-        fmt::print("{} ", prefix);
-        fmt::vprint(format, args);
-        fmt::print("\n");
+        fmt::print(stderr, "{} ", prefix);
+        fmt::vprint(stderr, format, args);
+        fmt::print(stderr, "\n");
     }
 
     bool enable_;
