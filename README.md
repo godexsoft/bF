@@ -1,6 +1,6 @@
 # bF - brainfuck interpreter
 
-A more-or-less complete implementation of brainfuck in c++17.
+A more-or-less complete implementation of brainfuck in C++17.
 
 ## features
 - running programs from files or stdin
@@ -17,13 +17,8 @@ A more-or-less complete implementation of brainfuck in c++17.
 
 ## dependencies
 
-- argp (if not present should be installed separately) 
-- cxx_argp (submodule)
-- libfmt (submodule)
-
-install *argp* using brew:
-    
-    $ brew install argp-standalone
+- cxxopts (submodule, header-only)
+- libfmt (submodule, header-only)
 
 ## configuring
 
@@ -42,16 +37,17 @@ By default this will build bF in *Release* configuration.
 
 ## running
 
-    $ ./bF -?
+    $ ./bF -h
 
 ## examples
 
 There is an examples folder with a bunch of programs to play with. 
-You can either specify the file as first argument
+You can either specify the file as first argument or as *--input* option:
 
     $ ./bF ../examples/hello.bf
+    $ ./bF --input ../examples/hello3.bf -i 10
 
-or read input from stdin if you pass "-" instead
+or read input from stdin if no filename is specified
 
-    $ ./bF - < ../examples/hello.bf
-    $ echo ",[.,]!Hello" | ./bF -
+    $ ./bF < ../examples/hello.bf
+    $ echo ',[.,]!Hello' | ./bF
