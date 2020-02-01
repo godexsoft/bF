@@ -1,8 +1,8 @@
 #include "config.h"
 #include "core.h"
-#include "cxx_argp_parser.h"
 #include "log.h"
 #include "util.h"
+#include <cxxopts.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -39,8 +39,6 @@ bool constexpr var_cellsize_enabled()
 
 int main(int argc, char *argv[])
 {
-    cxx_argp::parser args{1}; // "-" for stdin input
-
     uint64_t stack_size{30000};
     uint8_t cell_size{8};
     uint64_t start_cell{0};
@@ -49,33 +47,51 @@ int main(int argc, char *argv[])
     string file{};
     auto logging{false};
 
-    args.add_option({"stack-size", 's', "cells", 0, "Stack size in cells"}, stack_size);
-    args.add_option({"start-cell", 'i', "cell", 0, "Cell index for start cell"}, start_cell);
-
-    if constexpr (var_cellsize_enabled())
+    try
     {
-        args.add_option({"cell-size", 'c', "bits", 0, "Cell size in bits"}, cell_size);
+        cxxopts::Options options("bF", "Brainfuck interpreter written in C++17");
+
+        // clang-format off
+        options.add_options()
+            ("s,stack-size", "Stack size in cells", cxxopts::value<uint64_t>(stack_size))        
+            ("i,start-cell", "Cell index for start cell", cxxopts::value<uint64_t>(start_cell))
+            ("e,elastic", "Infinite array of cells", cxxopts::value<bool>(elastic))
+            ("w,wrapping", "Wrap on out of bounds", cxxopts::value<bool>(wrapping))
+            ("input", "Input file (can also be specified as first argument)", cxxopts::value<std::string>(), "filename")        
+            ("h,help", "Help message")
+        ;
+        // clang-format on
+
+        if constexpr (var_cellsize_enabled())
+        {
+            options.add_options()("c,cell-size", "Cell size in bits", cxxopts::value<uint8_t>());
+        }
+
+        if constexpr (bf::EnableLog)
+        {
+            options.add_options()("l,logging", "Log to stderr", cxxopts::value<bool>(logging));
+        }
+
+        options.positional_help("[filename]").show_positional_help();
+        options.parse_positional({"input"});
+
+        auto result = options.parse(argc, argv);
+
+        if (result.count("help"))
+        {
+            fmt::print(options.help({"", "Group"}));
+            return 0;
+        }
+
+        if (result.count("input"))
+        {
+            file = result["input"].as<std::string>();
+        }
     }
-
-    args.add_option({"elastic", 'e', nullptr, 0, "Infinite array of cells"}, elastic);
-    args.add_option({"wrapping", 'w', nullptr, 0, "Wrap to array size on negative index"}, wrapping);
-
-    if constexpr (bf::EnableLog)
+    catch (const cxxopts::OptionException &e)
     {
-        args.add_option({"logging", 'l', nullptr, 0, "Log to stderr"}, logging);
-    }
-
-    if (!args.parse(argc, argv, "[filename or -]", "Options:"))
-    {
-        logger::instance().fatal("there was an error parsing args");
+        logger::instance().fatal("Error parsing options: {}", e.what());
         return 1;
-    }
-
-    // use file passed as argument or stdin
-    auto f = args.arguments().at(0);
-    if (f != "-")
-    {
-        file = f;
     }
 
     logger::instance().enable(logging);
