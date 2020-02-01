@@ -3,10 +3,10 @@
 #include "memory.h"
 #include "parser.h"
 
+#include <fmt/format.h>
 #include <fstream>
 #include <iostream>
 #include <map>
-#include <fmt/format.h>
 
 namespace bf
 {
@@ -26,20 +26,30 @@ template <typename T> class core
 
     int execute()
     {
-        compile();
-        run();
+        auto err = compile();
+        if (err != 0)
+        {
+            return err;
+        }
+
+        err = run();
+        if (err != 0)
+        {
+            return err;
+        }
 
         return 0; // for now assume all good
     }
 
   private:
-    void compile()
+    int compile()
     {
         std::vector<uint64_t> loops;
         loops.reserve(128); // should be enough depth for most programs
 
         // parsing
-        parser_.parse([&](auto cursor, auto act) {
+        auto err = parser_.parse([&](auto cursor, auto act) {
+            auto ret{0};
             tape_.push_back(act);
 
             switch (act)
@@ -51,7 +61,8 @@ template <typename T> class core
                 if (loops.empty())
                 {
                     logger::instance().fatal("unmatched ']' at {}", cursor);
-                    exit(-127);
+                    ret = 127;
+                    break;
                 }
 
                 auto idx = loops.back();
@@ -64,16 +75,26 @@ template <typename T> class core
                 // not interested at these here
                 break;
             }
+
+            return ret;
         });
+
+        // check if parsing failed with some error
+        if (err != 0)
+        {
+            return err;
+        }
 
         if (!loops.empty())
         {
             logger::instance().fatal("unmatched '[' at {}", loops.back());
-            exit(-127);
+            return 128;
         }
+
+        return 0;
     }
 
-    void run()
+    int run()
     {
         for (auto cursor = 0; cursor < tape_.size(); ++cursor)
         {
@@ -97,12 +118,22 @@ template <typename T> class core
             case action::decrement:
                 memory_.dec();
                 break;
-            case action::move_left:
-                memory_.left();
-                break;
-            case action::move_right:
-                memory_.right();
-                break;
+            case action::move_left: {
+                auto err = memory_.left();
+                if (err != 0)
+                {
+                    return err;
+                }
+            }
+            break;
+            case action::move_right: {
+                auto err = memory_.right();
+                if (err != 0)
+                {
+                    return err;
+                }
+            }
+            break;
             case action::output: {
                 // only print \n if it's a 10 (bf way)
                 auto c = memory_.read();
@@ -148,6 +179,8 @@ template <typename T> class core
                 break;
             }
         }
+
+        return 0;
     }
 
     memory_t memory_;
@@ -155,5 +188,5 @@ template <typename T> class core
 
     std::vector<uint64_t> targets_;
     std::vector<action> tape_;
-};
+}; // namespace bf
 } // namespace bf

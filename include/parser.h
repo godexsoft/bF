@@ -53,7 +53,7 @@ template <typename T> class parser
         }
     }
 
-    void parse(std::function<void(unsigned int, action)> cb)
+    int parse(std::function<int(unsigned int, action)> cb)
     {
         auto cursor{0};
         auto act{action::invalid};
@@ -68,10 +68,16 @@ template <typename T> class parser
 
             if (act != action::invalid)
             {
-                cb(cursor, act);
+                auto err = cb(cursor, act);
+                if (err != 0)
+                {
+                    return err;
+                }
                 ++cursor;
             }
         } while (act != action::eof);
+
+        return 0;
     }
 
   private:

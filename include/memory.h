@@ -37,7 +37,7 @@ template <typename T> class memory
         debug_log('-');
     }
 
-    void right()
+    int right()
     {
         auto orig_cell{cell_idx_};
 
@@ -50,14 +50,15 @@ template <typename T> class memory
             else
             {
                 logger::instance().fatal("out of bounds.");
-                exit(-127);
+                return 130;
             }
         }
 
         debug_log('>', orig_cell);
+        return 0;
     }
 
-    void left()
+    int left()
     {
         auto orig_cell{cell_idx_};
 
@@ -71,11 +72,12 @@ template <typename T> class memory
             else
             {
                 logger::instance().fatal("negative out of bounds.");
-                exit(-127);
+                return 131;
             }
         }
 
         debug_log('<', orig_cell);
+        return 0;
     }
 
     bool is_zero() const noexcept { return model_[cell_idx_] == 0; }
