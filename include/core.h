@@ -96,88 +96,88 @@ template <typename T> class core
 
     int run()
     {
-        for (auto cursor = 0; cursor < tape_.size(); ++cursor)
+        try
         {
-            switch (tape_.at(cursor))
+            for (auto cursor = 0; cursor < tape_.size(); ++cursor)
             {
-            case action::loop_start:
-                if (memory_.is_zero())
+                switch (tape_.at(cursor))
                 {
-                    cursor = targets_.at(cursor);
+                case action::loop_start:
+                    if (memory_.is_zero())
+                    {
+                        cursor = targets_.at(cursor);
+                    }
+                    break;
+                case action::loop_end:
+                    if (!memory_.is_zero())
+                    {
+                        cursor = targets_.at(cursor);
+                    }
+                    break;
+                case action::increment:
+                    memory_.inc();
+                    break;
+                case action::decrement:
+                    memory_.dec();
+                    break;
+                case action::move_left: {
+                    memory_.left();
                 }
                 break;
-            case action::loop_end:
-                if (!memory_.is_zero())
-                {
-                    cursor = targets_.at(cursor);
+                case action::move_right: {
+                    memory_.right();
                 }
                 break;
-            case action::increment:
-                memory_.inc();
+                case action::output: {
+                    // only print \n if it's a 10 (bf way)
+                    auto c = memory_.read();
+                    if (c == T(10))
+                    {
+                        fmt::print("\n");
+                    }
+                    else
+                    {
+                        fmt::print("{}", c);
+                    }
+                }
                 break;
-            case action::decrement:
-                memory_.dec();
-                break;
-            case action::move_left: {
-                auto err = memory_.left();
-                if (err != 0)
-                {
-                    return err;
-                }
-            }
-            break;
-            case action::move_right: {
-                auto err = memory_.right();
-                if (err != 0)
-                {
-                    return err;
-                }
-            }
-            break;
-            case action::output: {
-                // only print \n if it's a 10 (bf way)
-                auto c = memory_.read();
-                if (c == T(10))
-                {
-                    fmt::print("\n");
-                }
-                else
-                {
-                    fmt::print("{}", c);
-                }
-            }
-            break;
-            case action::input: {
-                char c{};
+                case action::input: {
+                    char c{};
 
-                std::cin.clear();
-                std::cin.get(c);
+                    std::cin.clear();
+                    std::cin.get(c);
 
-                if (std::cin.fail())
-                {
-                    logger::instance().info("EOF received");
-                    ++cursor; // skip input
+                    if (std::cin.fail())
+                    {
+                        logger::instance().info("EOF received");
+                        ++cursor; // skip input
 
-                    continue;
+                        continue;
+                    }
+
+                    if (c == '\n' || c == '\r')
+                    {
+                        memory_.write(T{10}); // 10 is bf way to write \n
+                    }
+                    else
+                    {
+                        memory_.write(c);
+                    }
                 }
-
-                if (c == '\n' || c == '\r')
-                {
-                    memory_.write(T{10}); // 10 is bf way to write \n
-                }
-                else
-                {
-                    memory_.write(c);
+                break;
+                case action::memory_dump:
+                    memory_.dump();
+                    break;
+                default:
+                    // nop
+                    break;
                 }
             }
-            break;
-            case action::memory_dump:
-                memory_.dump();
-                break;
-            default:
-                // nop
-                break;
-            }
+        }
+        catch (std::runtime_error &err)
+        {
+            logger::instance().fatal("exception happened: {}", err.what());
+            return -1;
         }
 
         return 0;

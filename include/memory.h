@@ -37,7 +37,7 @@ template <typename T> class memory
         debug_log('-');
     }
 
-    int right()
+    void right()
     {
         auto orig_cell{cell_idx_};
 
@@ -49,16 +49,15 @@ template <typename T> class memory
             }
             else
             {
-                logger::instance().fatal("out of bounds.");
-                return 130;
+                logger::instance().fatal("overflow");
+                throw std::runtime_error("overflow");
             }
         }
 
         debug_log('>', orig_cell);
-        return 0;
     }
 
-    int left()
+    void left()
     {
         auto orig_cell{cell_idx_};
 
@@ -71,13 +70,12 @@ template <typename T> class memory
             }
             else
             {
-                logger::instance().fatal("negative out of bounds.");
-                return 131;
+                logger::instance().fatal("underflow");
+                throw std::runtime_error("underflow");
             }
         }
 
         debug_log('<', orig_cell);
-        return 0;
     }
 
     bool is_zero() const noexcept { return model_[cell_idx_] == 0; }
